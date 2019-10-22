@@ -30,12 +30,28 @@ class District(models.Model):
         return self.name
 
 
+class Samithi(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class Participant(models.Model):
+    GENDERS =  (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('T', 'Trans'),
+    )
+
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     code = models.CharField(max_length=255, default=random_string)
     name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     district = models.ForeignKey(District, on_delete=models.CASCADE)
+    gender = models.CharField(max_length=1, choices=GENDERS, default=None)
+    samithi = models.ForeignKey(Samithi, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return self.code + " - " + self.name
@@ -72,7 +88,7 @@ class EventCriteria(models.Model):
     max_mark = models.IntegerField()
 
     def __str__(self):
-        return self.event.name + " - " + self.name
+        return self.event.name + " - " + self.name + " - mark: " + str(self.max_mark)
 
 
 class EventParticipant(models.Model):
@@ -88,12 +104,26 @@ class EventParticipant(models.Model):
             return self.event.name + " - Team - " + self.team.code
 
 
+class Judge(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class EventMark(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    judge_name = models.CharField(max_length=255)
+    judge = models.ForeignKey(Judge, on_delete=models.CASCADE, default=None)
     event_participant = models.ForeignKey(EventParticipant, on_delete=models.CASCADE)
     event_criteria = models.ForeignKey(EventCriteria, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, default=None)
     mark = models.IntegerField()
 
     def __str__(self):
         return str(self.event_participant) + " - " + str(self.event_criteria)
+
+    def save(self, *args, **kwargs):
+        self.event = self.event_participant.event
+        super().save(*args, **kwargs)
+
