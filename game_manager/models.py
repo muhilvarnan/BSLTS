@@ -50,3 +50,50 @@ class Team(models.Model):
     def __str__(self):
         return self.code + " - " + self.name
 
+
+class Event(models.Model):
+    GROUPS = (
+        ('1', 'Group 1'),
+        ('2', 'Group 2'),
+        ('3', 'Group 3'),
+    )
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+    group = models.CharField(max_length=1, choices=GROUPS)
+
+    def __str__(self):
+        return self.get_group_display() + " - " + self.name
+
+
+class EventCriteria(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    max_mark = models.IntegerField()
+
+    def __str__(self):
+        return self.event.name + " - " + self.name
+
+
+class EventParticipant(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE, null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+
+    def __str__(self):
+        if self.participant:
+            return self.event.name + " - Participant - " + self.participant.code
+        else:
+            return self.event.name + " - Team - " + self.team.code
+
+
+class EventMark(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    judge_name = models.CharField(max_length=255)
+    event_participant = models.ForeignKey(EventParticipant, on_delete=models.CASCADE)
+    event_criteria = models.ForeignKey(EventCriteria, on_delete=models.CASCADE)
+    mark = models.IntegerField()
+
+    def __str__(self):
+        return str(self.event_participant) + " - " + str(self.event_criteria)
