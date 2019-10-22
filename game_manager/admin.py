@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, EventMark, Judge, Samithi
 
@@ -74,7 +75,7 @@ class EventMarkInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group')
+    list_display = ('name', 'group', 'download_judge_sheet')
     search_fields = ('name',)
     list_filter = ('group', )
 
@@ -83,6 +84,11 @@ class EventAdmin(admin.ModelAdmin):
         EventParticipantInline,
         EventMarkInline
     ]
+
+    def download_judge_sheet(self, obj):
+        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/judge-sheet', obj.id, "Download"))
+
+    download_judge_sheet.allow_tags = True
 
 
 class EventCriteriaAdmin(admin.ModelAdmin):
