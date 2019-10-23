@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources
 
 from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, EventMark, Judge, Samithi
 
@@ -35,10 +37,29 @@ def custom_titled_filter(title):
     return Wrapper
 
 
-class ParticipantAdmin(admin.ModelAdmin):
+class ParticipantResource(resources.ModelResource):
+
+    class Meta:
+        model = Participant
+        fields = ('name', 'date_of_birth', 'district', 'gender', 'samithi')
+
+    def get_instance(self, instance_loader, row):
+        try:
+            row['district'] = District.objects.get(name=row['district']).id
+            row['samithi'] = Samithi.objects.get(name=row['samithi']).id
+            return None
+        except District.DoesNotExist:
+            pass
+        except Samithi.DoesNotExist:
+            pass
+
+
+class ParticipantAdmin(ImportExportModelAdmin):
     list_display = ('code', 'name', 'date_of_birth', 'district', 'district_zone', 'gender', 'samithi')
     search_fields = ('code', 'name', 'date_of_birth', 'district__name', 'district__zone__name', 'samithi__name')
     list_filter = (('district__name', custom_titled_filter('District')), ('samithi__name', custom_titled_filter('Samithi')), 'gender')
+
+    resource_class = ParticipantResource
 
     def district_zone(self, obj):
         return obj.district.zone.name

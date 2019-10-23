@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+admin.site.site_header = "BSLTS Admin"
+admin.site.site_title = "BSLTS Admin Portal"
+admin.site.index_title = "Welcome to BSLTS Portal"
+
+
 urlpatterns = [
     path('', admin.site.urls),
     path('game-manager/', include('game_manager.urls')),

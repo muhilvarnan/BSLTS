@@ -13,11 +13,11 @@ def get_headers(event):
 
 def get_event_participants(event):
     participants = []
-    for eventparticipant in event.eventparticipant_set.all():
-        if eventparticipant.participant:
+    for event_participant in event.eventparticipant_set.all():
+        if event_participant.participant:
             participants.append({
-                "zone": eventparticipant.participant.district.zone.name,
-                "code": eventparticipant.participant.code
+                "zone": event_participant.participant.district.zone.name,
+                "code": event_participant.participant.code
             })
     return participants
 
@@ -39,7 +39,6 @@ def generate_judge_event_sheet(event_id):
     header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
 
     headers = get_headers(event)
-
 
     worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
                           "Sri Sathya Sai Organisations, Tirupur District, TamilNadu",

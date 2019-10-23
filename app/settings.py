@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
     'game_manager'
 ]
 
@@ -139,3 +140,5 @@ django_heroku.settings(locals())
 
 if DATABASES['default'].get("OPTIONS"):
     del DATABASES['default']['OPTIONS']['sslmode']
+
+IMPORT_EXPORT_USE_TRANSACTIONS = True
