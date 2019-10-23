@@ -17,9 +17,9 @@ class DistrictAdmin(admin.ModelAdmin):
     list_display = ('name', 'zone', 'contact_name', 'contact_phone_number', 'contact_email')
     search_fields = ('name', 'zone__name', 'contact_name', 'contact_phone_number', 'contact_email')
 
-    inlines = [
-        ParticipantInline,
-    ]
+    # inlines = [
+    #     ParticipantInline,
+    # ]
 
 
 class TeamInline(admin.TabularInline):
