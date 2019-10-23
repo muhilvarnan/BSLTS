@@ -23,7 +23,7 @@ def get_event_participants(event):
 
 
 def get_end_column_alphabet(header_count):
-    return chr(65 + header_count)
+    return chr(65 + header_count - 1)
 
 
 def generate_judge_event_sheet(event_id):
