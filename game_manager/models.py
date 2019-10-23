@@ -33,6 +33,7 @@ class District(models.Model):
 class Samithi(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -40,9 +41,13 @@ class Samithi(models.Model):
 
 class Participant(models.Model):
     GENDERS =  (
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('T', 'Trans'),
+        ('B', 'Boy'),
+        ('G', 'Girl')
+    )
+    GROUPS = (
+        ('1', 'Group 1'),
+        ('2', 'Group 2'),
+        ('3', 'Group 3'),
     )
 
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
@@ -52,6 +57,7 @@ class Participant(models.Model):
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     gender = models.CharField(max_length=1, choices=GENDERS, default=None)
     samithi = models.ForeignKey(Samithi, on_delete=models.CASCADE, default=None)
+    group = models.CharField(max_length=1, choices=GROUPS)
 
     def __str__(self):
         return self.code + " - " + self.name
