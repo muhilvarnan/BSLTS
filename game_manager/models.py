@@ -128,6 +128,9 @@ class EventMark(models.Model):
     def __str__(self):
         return str(self.event_participant) + " - " + str(self.event_criteria)
 
+    class Meta:
+        unique_together = ('event_participant', 'event_criteria',)
+
     def save(self, *args, **kwargs):
         self.event = self.event_participant.event
         super().save(*args, **kwargs)

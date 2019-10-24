@@ -111,7 +111,7 @@ class EventMarkInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'download_judge_sheet')
+    list_display = ('name', 'group', 'download_judge_sheet', 'download_rank_sheet')
     search_fields = ('name',)
     list_filter = ('group', )
 
@@ -124,7 +124,11 @@ class EventAdmin(admin.ModelAdmin):
     def download_judge_sheet(self, obj):
         return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/judge-sheet', obj.id, "Download"))
 
+    def download_rank_sheet(self, obj):
+        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/rank-sheet', obj.id, "Download"))
+
     download_judge_sheet.allow_tags = True
+    download_rank_sheet.allow_tags = True
 
 
 class EventCriteriaAdmin(admin.ModelAdmin):
