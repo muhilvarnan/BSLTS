@@ -61,9 +61,12 @@ class ParticipantAdminForm(forms.ModelForm):
         return age
 
     def clean_group(self):
-        if self.calculate_age(self.cleaned_data['date_of_birth']) > self.cleaned_data['group'].max_age_limit:
-            raise forms.ValidationError("Participant age is greater than selected group max age limit - " +
-                                        str(self.cleaned_data['group'].max_age_limit))
+        if self.calculate_age(self.cleaned_data['date_of_birth']) > self.cleaned_data['group'].max_age_limit or \
+                self.calculate_age(self.cleaned_data['date_of_birth']) < self.cleaned_data['group'].min_age_limit:
+            raise forms.ValidationError("Participant age is not fall between than selected group min age limit (%s)"
+                                        " and max age limit (%s) " %
+                                        (str(self.cleaned_data['group'].min_age_limit),
+                                        str(self.cleaned_data['group'].max_age_limit)))
         return self.cleaned_data['group']
 
 
@@ -214,7 +217,7 @@ class SamithiAdmin(admin.ModelAdmin):
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'max_age_limit')
+    list_display = ('name', 'max_age_limit', 'min_age_limit')
 
 
 admin.site.register(Zone, ZoneAdmin)

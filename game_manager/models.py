@@ -22,6 +22,7 @@ class Group(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
     max_age_limit = models.IntegerField()
+    min_age_limit = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -77,7 +78,6 @@ class Team(models.Model):
 
 
 class Event(models.Model):
-
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
