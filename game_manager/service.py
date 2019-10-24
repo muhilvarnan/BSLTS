@@ -16,7 +16,7 @@ def get_event_participants(event):
     for event_participant in event.eventparticipant_set.all():
         if event_participant.participant:
             participants.append({
-                "zone": event_participant.participant.district.zone.name,
+                "zone": event_participant.participant.samithi.district.zone.name,
                 "code": event_participant.participant.code
             })
     return participants

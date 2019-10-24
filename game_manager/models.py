@@ -18,6 +18,15 @@ class Zone(models.Model):
         return self.name
 
 
+class Group(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+    max_age_limit = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+
 class District(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
@@ -36,28 +45,22 @@ class Samithi(models.Model):
     district = models.ForeignKey(District, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.district.name + " - " + self.name
 
 
 class Participant(models.Model):
     GENDERS =  (
-        ('B', 'Boy'),
-        ('G', 'Girl')
-    )
-    GROUPS = (
-        ('1', 'Group 1'),
-        ('2', 'Group 2'),
-        ('3', 'Group 3'),
+        ('Boy', 'Boy'),
+        ('Girl', 'Girl')
     )
 
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     code = models.CharField(max_length=255, default=random_string)
     name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
-    district = models.ForeignKey(District, on_delete=models.CASCADE)
-    gender = models.CharField(max_length=1, choices=GENDERS, default=None)
+    gender = models.CharField(max_length=4, choices=GENDERS, default=None)
     samithi = models.ForeignKey(Samithi, on_delete=models.CASCADE, default=None)
-    group = models.CharField(max_length=1, choices=GROUPS)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.code + " - " + self.name
@@ -74,17 +77,13 @@ class Team(models.Model):
 
 
 class Event(models.Model):
-    GROUPS = (
-        ('1', 'Group 1'),
-        ('2', 'Group 2'),
-        ('3', 'Group 3'),
-    )
+
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
-    group = models.CharField(max_length=1, choices=GROUPS)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.get_group_display() + " - " + self.name
+        return self.group.name + " - " + self.name
 
 
 class EventCriteria(models.Model):
