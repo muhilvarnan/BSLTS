@@ -3,7 +3,6 @@ from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from django import forms
-from datetime import date
 
 from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, EventMark, Judge, Samithi, Group
 
@@ -54,19 +53,13 @@ class ParticipantAdminForm(forms.ModelForm):
         model = Participant
         fields = ('code', 'name', 'date_of_birth', 'gender', 'samithi', 'group')
 
-    def calculate_age(self, birth_date):
-        today = date.today()
-        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-
-        return age
-
     def clean_group(self):
-        if self.calculate_age(self.cleaned_data['date_of_birth']) > self.cleaned_data['group'].max_age_limit or \
-                self.calculate_age(self.cleaned_data['date_of_birth']) < self.cleaned_data['group'].min_age_limit:
-            raise forms.ValidationError("Participant age is not fall between than selected group min age limit (%s)"
-                                        " and max age limit (%s) " %
-                                        (str(self.cleaned_data['group'].min_age_limit),
-                                        str(self.cleaned_data['group'].max_age_limit)))
+        if self.cleaned_data['date_of_birth'] > self.cleaned_data['group'].max_dob or \
+                self.cleaned_data['date_of_birth'] < self.cleaned_data['group'].min_dob:
+            raise forms.ValidationError("Participant dob is not between the selected group min dob limit (%s)"
+                                        " and max dob limit (%s) " %
+                                        (str(self.cleaned_data['group'].min_dob),
+                                        str(self.cleaned_data['group'].max_dob)))
         return self.cleaned_data['group']
 
 
@@ -217,7 +210,7 @@ class SamithiAdmin(admin.ModelAdmin):
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'max_age_limit', 'min_age_limit')
+    list_display = ('name', 'max_dob', 'min_dob')
 
 
 admin.site.register(Zone, ZoneAdmin)
