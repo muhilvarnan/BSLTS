@@ -62,79 +62,6 @@ class ParticipantAdminForm(forms.ModelForm):
                                         str(self.cleaned_data['group'].max_dob)))
         return self.cleaned_data['group']
 
-
-class EventParticipantInline(admin.TabularInline):
-    model = EventParticipant
-
-
-class ParticipantAdmin(ImportExportModelAdmin):
-    list_display = ('code', 'name', 'date_of_birth', 'samithi_district_name', 'samithi_district_zone', 'gender', 'samithi', 'group')
-    search_fields = ('code', 'name', 'date_of_birth', 'samithi__district__name', 'samithi__district__zone__name', 'samithi__name', 'group__name')
-    list_filter = (('samithi__district__name', custom_titled_filter('District')), ('samithi__name', custom_titled_filter('Samithi')), ('group__name', custom_titled_filter('Group')), 'gender')
-    form = ParticipantAdminForm
-
-    resource_class = ParticipantResource
-
-    def samithi_district_zone(self, obj):
-        return obj.samithi.district.zone.name
-
-    def samithi_district_name(self, obj):
-        return obj.samithi.district.name
-
-    samithi_district_zone.short_description = 'District Zone'
-    samithi_district_name.short_description = 'District'
-
-    inlines = [
-        EventParticipantInline
-    ]
-
-
-class TeamAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'total_participants')
-    search_fields = ('code', 'name')
-    filter_horizontal = ('participants',)
-
-    def total_participants(self, obj):
-        return obj.participants.count()
-
-    total_participants.empty_value_display = 0
-
-
-class EventCriteriaInline(admin.TabularInline):
-    model = EventCriteria
-
-
-class EventMarkInline(admin.TabularInline):
-    fields = ('judge', 'event_participant', 'event_criteria', 'mark')
-
-    model = EventMark
-
-
-class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'download_judge_sheet', 'download_rank_sheet')
-    search_fields = ('name',)
-    list_filter = ('group', )
-
-    inlines = [
-        EventCriteriaInline,
-        EventParticipantInline,
-        EventMarkInline
-    ]
-
-    def download_judge_sheet(self, obj):
-        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/judge-sheet', obj.id, "Download"))
-
-    def download_rank_sheet(self, obj):
-        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/rank-sheet', obj.id, "Download"))
-
-    download_judge_sheet.allow_tags = True
-    download_rank_sheet.allow_tags = True
-
-
-class EventCriteriaAdmin(admin.ModelAdmin):
-    list_display = ('name', 'event', 'max_mark')
-
-
 class EventParticipantAdminForm(forms.ModelForm):
     class Meta:
         model = EventParticipant
@@ -195,6 +122,80 @@ class EventParticipantAdmin(admin.ModelAdmin):
         return obj.event.group.name
 
     group.empty_value_display = ""
+
+
+class EventParticipantInline(admin.TabularInline):
+    model = EventParticipant
+    form = EventParticipantAdminForm
+
+
+class ParticipantAdmin(ImportExportModelAdmin):
+    list_display = ('code', 'name', 'date_of_birth', 'samithi_district_name', 'samithi_district_zone', 'gender', 'samithi', 'group')
+    search_fields = ('code', 'name', 'date_of_birth', 'samithi__district__name', 'samithi__district__zone__name', 'samithi__name', 'group__name')
+    list_filter = (('samithi__district__name', custom_titled_filter('District')), ('samithi__name', custom_titled_filter('Samithi')), ('group__name', custom_titled_filter('Group')), 'gender')
+    form = ParticipantAdminForm
+
+    resource_class = ParticipantResource
+
+    def samithi_district_zone(self, obj):
+        return obj.samithi.district.zone.name
+
+    def samithi_district_name(self, obj):
+        return obj.samithi.district.name
+
+    samithi_district_zone.short_description = 'District Zone'
+    samithi_district_name.short_description = 'District'
+
+    inlines = [
+        TeamInline,
+        EventParticipantInline
+    ]
+
+
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'total_participants')
+    search_fields = ('code', 'name')
+    filter_horizontal = ('participants',)
+
+    def total_participants(self, obj):
+        return obj.participants.count()
+
+    total_participants.empty_value_display = 0
+
+
+class EventCriteriaInline(admin.TabularInline):
+    model = EventCriteria
+
+
+class EventMarkInline(admin.TabularInline):
+    fields = ('judge', 'event_participant', 'event_criteria', 'mark')
+
+    model = EventMark
+
+
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('name', 'group', 'download_judge_sheet', 'download_rank_sheet')
+    search_fields = ('name',)
+    list_filter = ('group', )
+
+    inlines = [
+        EventCriteriaInline,
+        EventParticipantInline,
+        EventMarkInline
+    ]
+
+    def download_judge_sheet(self, obj):
+        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/judge-sheet', obj.id, "Download"))
+
+    def download_rank_sheet(self, obj):
+        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/rank-sheet', obj.id, "Download"))
+
+    download_judge_sheet.allow_tags = True
+    download_rank_sheet.allow_tags = True
+
+
+class EventCriteriaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'event', 'max_mark')
 
 
 class JudgeAdmin(admin.ModelAdmin):

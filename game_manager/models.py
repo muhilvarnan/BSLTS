@@ -71,7 +71,7 @@ class Team(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     code = models.CharField(max_length=255, default=random_string)
     name = models.CharField(max_length=255)
-    participants = models.ManyToManyField(Participant)
+    participants = models.ManyToManyField(Participant, blank=True)
 
     def __str__(self):
         return self.code + " - " + self.name
