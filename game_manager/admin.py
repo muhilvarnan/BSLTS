@@ -63,6 +63,10 @@ class ParticipantAdminForm(forms.ModelForm):
         return self.cleaned_data['group']
 
 
+class EventParticipantInline(admin.TabularInline):
+    model = EventParticipant
+
+
 class ParticipantAdmin(ImportExportModelAdmin):
     list_display = ('code', 'name', 'date_of_birth', 'samithi_district_name', 'samithi_district_zone', 'gender', 'samithi', 'group')
     search_fields = ('code', 'name', 'date_of_birth', 'samithi__district__name', 'samithi__district__zone__name', 'samithi__name', 'group__name')
@@ -81,7 +85,7 @@ class ParticipantAdmin(ImportExportModelAdmin):
     samithi_district_name.short_description = 'District'
 
     inlines = [
-        TeamInline,
+        EventParticipantInline
     ]
 
 
@@ -98,10 +102,6 @@ class TeamAdmin(admin.ModelAdmin):
 
 class EventCriteriaInline(admin.TabularInline):
     model = EventCriteria
-
-
-class EventParticipantInline(admin.TabularInline):
-    model = EventParticipant
 
 
 class EventMarkInline(admin.TabularInline):

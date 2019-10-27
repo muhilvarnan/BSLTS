@@ -1,12 +1,15 @@
 import io
 import xlsxwriter
 from .models import Event, EventMark
+from django.db.models import Sum
 
 
 def get_headers(event):
-    headers = ['ZONE', 'CODE']
+    headers = ['Zone', 'Code', 'Name of the Participant']
     for eventCriteria in event.eventcriteria_set.all():
         headers.append('%s(%s)' % (eventCriteria.name, eventCriteria.max_mark))
+    total = event.eventcriteria_set.all().aggregate(Sum('max_mark'))
+    headers.append('Total(%s)' % (total.get('max_mark__sum')))
 
     return headers
 
@@ -17,14 +20,16 @@ def get_event_participants(event):
         if event_participant.participant:
             participants.append({
                 "zone": event_participant.participant.samithi.district.zone.name,
-                "code": event_participant.participant.code
+                "code": event_participant.participant.code,
+                "name":event_participant.participant.name
             })
 
         if event_participant.team:
             zones = ",".join(map(lambda participant: participant.samithi.district.zone.name, event_participant.team.participants.all()))
             participants.append({
                 "zone": zones,
-                "code": event_participant.team.code
+                "code": event_participant.team.code,
+                "name": event_participant.participant.name
             })
     return participants
 
@@ -163,13 +168,13 @@ def generate_judge_event_sheet(event_id):
 
     event_info_format = workbook.add_format({'bold': True, 'font_color': 'red', 'align': 'center'})
 
-    worksheet.merge_range('A3:B3',
+    worksheet.merge_range('A3:C3',
                           event.name,
                           event_info_format)
 
     worksheet.set_column('A3:A3', 30)
 
-    worksheet.merge_range('C3:%s3' % (get_end_column_alphabet(len(headers))),
+    worksheet.merge_range('D3:%s3' % (get_end_column_alphabet(len(headers))),
                           event.group.name,
                           event_info_format)
 
@@ -190,6 +195,7 @@ def generate_judge_event_sheet(event_id):
     for row_num, participant in enumerate(participants):
         worksheet.write(row_index + row_num, 0, participant.get("zone"))
         worksheet.write(row_index + row_num, 1, participant.get("code"))
+        worksheet.write(row_index + row_num, 2, participant.get("name"))
 
     workbook.close()
 
