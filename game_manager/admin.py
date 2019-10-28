@@ -4,9 +4,10 @@ from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from django import forms
 
-from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, EventMark, Judge, Samithi, Group
+from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, Samithi, Group
 
 MAX_EVENT_PER_PARTICIPANT = 2
+MAX_PARTICIPANT_IN_TEAM = 5
 
 
 class ZoneAdmin(admin.ModelAdmin):
@@ -62,6 +63,7 @@ class ParticipantAdminForm(forms.ModelForm):
                                         str(self.cleaned_data['group'].max_dob)))
         return self.cleaned_data['group']
 
+
 class EventParticipantAdminForm(forms.ModelForm):
     class Meta:
         model = EventParticipant
@@ -77,16 +79,23 @@ class EventParticipantAdminForm(forms.ModelForm):
         if self.cleaned_data['participant'] and self.check_mismatch_event_participant_count(self.cleaned_data['participant']):
             raise self.get_mismatch_event_participant_count_validation_error(self.cleaned_data['participant'])
 
+        if self.cleaned_data['participant']:
+            if EventParticipant.objects\
+                    .filter(participant__samithi__district__id=self.cleaned_data['participant'].samithi.district.id,
+                            event__id=self.cleaned_data['event'].id)\
+                    .exclude(pk=self.instance.id):
+                raise forms.ValidationError("Participant already exists for the event for the district %s" % (self.cleaned_data['participant'].samithi.district.name,))
+
         return self.cleaned_data['participant']
 
     def check_mismatch_group(self, participant):
-        return participant.group.id != self.cleaned_data['event'].group.id
+        return participant.group.id not in list(map(lambda group: group.id, self.cleaned_data['event'].groups.all()))
 
     def get_group_mismatch_validation_error(self, participant):
         return forms.ValidationError("Participant with code %s is in Group(%s) which does not match with event group%s)"
                                      % (participant.code,
                                         participant.group.name,
-                                        self.cleaned_data['event'].group.name))
+                                        ",".join(map(lambda group: group.name, self.cleaned_data['event'].groups.all()))))
 
     def get_mismatch_event_participant_count_validation_error(self, participant):
         return forms.ValidationError("Participant with code %s is already reached max participation count %s"
@@ -107,25 +116,30 @@ class EventParticipantAdminForm(forms.ModelForm):
             if event_participant_count_mismatch_participants:
                 raise forms.ValidationError(list(map(self.get_mismatch_event_participant_count_validation_error,
                                                      event_participant_count_mismatch_participants)))
+            if self.cleaned_data['team'] and self.cleaned_data['team'].participants.count():
+                district = self.cleaned_data['team'].participants.first().samithi.district
+
+                if EventParticipant.objects \
+                        .filter(team__participants__samithi__district__id=district.id,
+                                event__id=self.cleaned_data['event'].id) \
+                        .exclude(pk=self.instance.id):
+                    raise forms.ValidationError("Team already exists for the event for the district %s" % (
+                    district.name,))
 
         return self.cleaned_data['team']
 
 
 class EventParticipantAdmin(admin.ModelAdmin):
-    list_display = ('event', 'team', 'participant', 'group')
+    list_display = ('event', 'team', 'participant')
     search_fields = ('event__name', 'team__name', 'participant__name')
     list_filter = (('event__name', custom_titled_filter('Event')),)
 
     form = EventParticipantAdminForm
 
-    def group(self, obj):
-        return obj.event.group.name
-
-    group.empty_value_display = ""
-
 
 class EventParticipantInline(admin.TabularInline):
     model = EventParticipant
+    fields = ('event',)
     form = EventParticipantAdminForm
 
 
@@ -152,10 +166,48 @@ class ParticipantAdmin(ImportExportModelAdmin):
     ]
 
 
+class TeamAdminForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ('code', 'name', 'participants')
+
+    def clean_participants(self):
+        if self.cleaned_data['participants']:
+            errors = []
+            gender = None
+            for participant in self.cleaned_data['participants']:
+                if gender and gender != participant.gender:
+                    errors.append(forms.ValidationError("Participants should be in same gender"))
+                    break
+                gender = participant.gender
+
+            group = None
+            for participant in self.cleaned_data['participants']:
+                if group and group != participant.group.id:
+                    errors.append(forms.ValidationError("Participants should be in same group"))
+                group = participant.group.id
+
+            district = None
+            for participant in self.cleaned_data['participants']:
+                if district and district != participant.samithi.district.id:
+                    errors.append(forms.ValidationError("Participants should be in same district"))
+                district = participant.samithi.district.id
+
+            if self.cleaned_data['participants'].count() > MAX_PARTICIPANT_IN_TEAM:
+                errors.append(forms.ValidationError("Team can only max of %s participants" % (MAX_PARTICIPANT_IN_TEAM,
+                                                                                              )))
+
+            if errors:
+                raise forms.ValidationError(errors)
+
+        return self.cleaned_data['participants']
+
+
 class TeamAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'total_participants')
     search_fields = ('code', 'name')
     filter_horizontal = ('participants',)
+    form = TeamAdminForm
 
     def total_participants(self, obj):
         return obj.participants.count()
@@ -167,47 +219,23 @@ class EventCriteriaInline(admin.TabularInline):
     model = EventCriteria
 
 
-class EventMarkInline(admin.TabularInline):
-    fields = ('judge', 'event_participant', 'event_criteria', 'mark')
-
-    model = EventMark
-
-
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'download_judge_sheet', 'download_rank_sheet')
+    list_display = ('name', 'download_judge_sheet')
     search_fields = ('name',)
-    list_filter = ('group', )
+    list_filter = ('groups',)
 
     inlines = [
         EventCriteriaInline,
-        EventParticipantInline,
-        EventMarkInline
     ]
 
     def download_judge_sheet(self, obj):
         return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/judge-sheet', obj.id, "Download"))
 
-    def download_rank_sheet(self, obj):
-        return format_html('<a href="%s/%s">%s</a>' % ('/game-manager/download/rank-sheet', obj.id, "Download"))
-
     download_judge_sheet.allow_tags = True
-    download_rank_sheet.allow_tags = True
 
 
 class EventCriteriaAdmin(admin.ModelAdmin):
     list_display = ('name', 'event', 'max_mark')
-
-
-class JudgeAdmin(admin.ModelAdmin):
-
-    list_display = ('name',)
-    inlines = [
-        EventMarkInline,
-    ]
-
-
-class EventMarkAdmin(admin.ModelAdmin):
-    list_display = ('judge', 'event_participant', 'event_criteria', 'mark')
 
 
 class SamithiAdmin(admin.ModelAdmin):
@@ -225,8 +253,6 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(EventCriteria, EventCriteriaAdmin)
 admin.site.register(EventParticipant, EventParticipantAdmin)
-admin.site.register(EventMark, EventMarkAdmin)
-admin.site.register(Judge, JudgeAdmin)
 admin.site.register(Samithi, SamithiAdmin)
 admin.site.register(Group, GroupAdmin)
 

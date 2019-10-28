@@ -80,10 +80,10 @@ class Team(models.Model):
 class Event(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    groups = models.ManyToManyField(Group, blank=True, help_text="Groups in which paritcipants may in for the event", verbose_name="Participant falling group")
 
     def __str__(self):
-        return self.group.name + " - " + self.name
+        return ",".join(map(lambda group: group.name, self.groups.all())) + " - " + self.name
 
 
 class EventCriteria(models.Model):
@@ -107,31 +107,4 @@ class EventParticipant(models.Model):
             return self.event.name + " - Participant - " + self.participant.code
         else:
             return self.event.name + " - Team - " + self.team.code
-
-
-class Judge(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-
-class EventMark(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    judge = models.ForeignKey(Judge, on_delete=models.CASCADE, default=None)
-    event_participant = models.ForeignKey(EventParticipant, on_delete=models.CASCADE)
-    event_criteria = models.ForeignKey(EventCriteria, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, default=None)
-    mark = models.IntegerField()
-
-    def __str__(self):
-        return str(self.event_participant) + " - " + str(self.event_criteria)
-
-    class Meta:
-        unique_together = ('event_participant', 'event_criteria',)
-
-    def save(self, *args, **kwargs):
-        self.event = self.event_participant.event
-        super().save(*args, **kwargs)
 
