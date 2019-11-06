@@ -4,7 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from django import forms
 
-from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, Samithi, Group
+from .models import Zone, District, Participant, Team, Event, EventCriteria, EventParticipant, Samithi, Group, ParticipantFamily
 
 MAX_EVENT_PER_PARTICIPANT = 2
 MAX_PARTICIPANT_IN_TEAM = 5
@@ -143,6 +143,14 @@ class EventParticipantInline(admin.TabularInline):
     fields = ('event',)
     form = EventParticipantAdminForm
 
+class ParticipantFamilyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'gender', 'participant', 'relation')
+
+class ParticipantFamilyInline(admin.TabularInline):
+    model = ParticipantFamily
+    fields = ('name', 'gender', 'relation')
+
+
 
 class ParticipantAdmin(ImportExportModelAdmin):
     list_display = ('code', 'name', 'date_of_birth', 'samithi_district_name', 'samithi_district_zone', 'gender', 'samithi', 'group')
@@ -162,6 +170,7 @@ class ParticipantAdmin(ImportExportModelAdmin):
     samithi_district_name.short_description = 'District'
 
     inlines = [
+        ParticipantFamilyInline,
         TeamInline,
         EventParticipantInline
     ]
@@ -256,5 +265,6 @@ admin.site.register(EventCriteria, EventCriteriaAdmin)
 admin.site.register(EventParticipant, EventParticipantAdmin)
 admin.site.register(Samithi, SamithiAdmin)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(ParticipantFamily, ParticipantFamilyAdmin)
 
 

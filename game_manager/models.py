@@ -78,7 +78,7 @@ class Participant(models.Model):
     def __str__(self):
         return self.code + " - " + self.name
 
-class ParticipantsFamily(models.Model):
+class ParticipantFamily(models.Model):
     GENDERS = (
         ('Male', 'Male'),
         ('Female', 'Female')
@@ -91,7 +91,7 @@ class ParticipantsFamily(models.Model):
     )
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255)
-    gender = models.CharField(max_length=4, choices=GENDERS, default=None)
+    gender = models.CharField(max_length=10, choices=GENDERS, default=None)
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
     relation = models.CharField(max_length=100, choices=RELATIONS, default=None)
 
