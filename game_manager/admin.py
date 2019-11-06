@@ -52,7 +52,8 @@ class ParticipantResource(resources.ModelResource):
 class ParticipantAdminForm(forms.ModelForm):
     class Meta:
         model = Participant
-        fields = ('code', 'name', 'date_of_birth', 'gender', 'samithi', 'group')
+        fields = ('code', 'name', 'date_of_birth', 'gender', 'samithi', 'group', 'accommodation', 'arrival_point', 'arrival_date',
+                  'arrival_time', 'departure_point', 'departure_date', 'departure_time')
 
     def clean_group(self):
         if self.cleaned_data['date_of_birth'] > self.cleaned_data['group'].max_dob or \

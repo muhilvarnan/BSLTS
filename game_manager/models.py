@@ -54,6 +54,11 @@ class Participant(models.Model):
         ('Boy', 'Boy'),
         ('Girl', 'Girl')
     )
+    TRANSPORT_MODE = (
+        ('Railway Station','Railway Station'),
+        ('Old Bus Stand','Old Bus Stand'),
+        ('New Bus Stand','New Bus Stand')
+    )
 
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     code = models.CharField(max_length=255, default=random_string)
@@ -62,9 +67,36 @@ class Participant(models.Model):
     gender = models.CharField(max_length=4, choices=GENDERS, default=None)
     samithi = models.ForeignKey(Samithi, on_delete=models.CASCADE, default=None)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    accommodation = models.BooleanField(default=True)
+    arrival_point = models.CharField(max_length=50, choices=TRANSPORT_MODE, default=None)
+    departure_point = models.CharField(max_length=50, choices=TRANSPORT_MODE, default=None)
+    arrival_time = models.CharField(max_length=50)
+    departure_time = models.CharField(max_length=50)
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
 
     def __str__(self):
         return self.code + " - " + self.name
+
+class ParticipantsFamily(models.Model):
+    GENDERS = (
+        ('Male', 'Male'),
+        ('Female', 'Female')
+    )
+    RELATIONS = (
+        ('Family', 'Family'),
+        ('Guru', 'Guru'),
+        ('DEC', 'DEC'),
+        ('SSSO member', 'SSSO member')
+    )
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+    gender = models.CharField(max_length=4, choices=GENDERS, default=None)
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    relation = models.CharField(max_length=100, choices=RELATIONS, default=None)
+
+    def __str__(self):
+        return self.name
 
 
 class Team(models.Model):
