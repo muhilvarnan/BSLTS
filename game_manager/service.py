@@ -3,6 +3,7 @@ import xlsxwriter
 from .models import Event
 from django.db.models import Sum
 from django.db import connection
+import datetime
 
 
 
@@ -181,5 +182,81 @@ def generate_accommodation_sheet(gender):
     output.seek(0)
 
     return 'Accommodation_%s_BSLTS_2019.xlsx'% gender, output
+
+def generate_transportation_sheet(journey_type):
+    cursor = connection.cursor()
+    cursor.execute('''SELECT game_manager_district.NAME,
+                       game_manager_district.contact_name,
+                       game_manager_district.contact_phone_number, 
+                       game_manager_participant.%(type)s_point, 
+                       game_manager_participant.%(type)s_date, 
+                       game_manager_participant.%(type)s_time, 
+                       Count(game_manager_participantfamily.id) 
+                       + Count(DISTINCT(game_manager_participant.id)) AS count 
+                FROM   game_manager_district 
+                       LEFT JOIN game_manager_samithi 
+                              ON game_manager_samithi.district_id = game_manager_district.id 
+                       LEFT JOIN game_manager_participant 
+                              ON game_manager_participant.samithi_id = game_manager_samithi.id 
+                                 AND game_manager_participant.accommodation = true 
+                                 AND %(type)s_point != 'Direct to Mandapam' 
+                       LEFT JOIN game_manager_participantfamily 
+                              ON game_manager_participantfamily.participant_id = 
+                                 game_manager_participant.id 
+                GROUP  BY game_manager_district.NAME,
+                          game_manager_district.contact_name,
+                          game_manager_district.contact_phone_number, 
+                          game_manager_participant.%(type)s_point, 
+                          game_manager_participant.%(type)s_time, 
+                          game_manager_participant.%(type)s_date;  ''' % {'type': journey_type})
+    rows = cursor.fetchall()
+    output = io.BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    worksheet.set_paper(9)
+
+    header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
+
+
+    headers = ['S.No', 'District', 'DEC', 'Contact', journey_type.title()+' Point', 'Date of '+journey_type.title(), 'Time of '+journey_type.title(),'Count']
+
+    worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
+                          "Aum Sri Sai Ram",
+                          header_format)
+
+    worksheet.set_column('A:A', 85)
+
+    worksheet.merge_range('A2:%s2' % (get_end_column_alphabet(len(headers))),
+                          "Balvikas State Level Talent Search 2019 - Transportation - %s Details " % journey_type.title(),
+                          header_format)
+
+    row_index = 2
+    field_header_formatter = workbook.add_format({'bold': True, 'align': 'center', 'bg_color': 'grey'})
+
+    for col_num, header in enumerate(headers):
+        worksheet.write(row_index, col_num, header, field_header_formatter)
+
+    worksheet.set_column('A4:%s4' % (get_end_column_alphabet(len(headers))), 20)
+
+    row_index = row_index + 1
+    for row_num, data in enumerate(rows):
+        # if data[4]:
+            # data[4] = datetime.datetime.strptime(data[4], '%d-%m-%Y')
+        worksheet.write(row_index + row_num, 0, row_num + 1)
+        worksheet.write(row_index + row_num, 1, data[0])
+        worksheet.write(row_index + row_num, 2, data[1])
+        worksheet.write(row_index + row_num, 3, data[2])
+        worksheet.write(row_index + row_num, 4, data[3])
+        worksheet.write(row_index + row_num, 5, data[4])
+        worksheet.write(row_index + row_num, 6, data[5])
+        worksheet.write(row_index + row_num, 7, data[6])
+
+    workbook.close()
+
+    output.seek(0)
+
+    return 'Transportation_%s_BSLTS_2019.xlsx' % journey_type, output
+
 
 

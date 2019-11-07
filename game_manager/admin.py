@@ -251,7 +251,7 @@ class EventCriteriaAdmin(admin.ModelAdmin):
 
 
 class SamithiAdmin(admin.ModelAdmin):
-    list_display = ('name', )
+    list_display = ('name', 'district')
 
 
 class GroupAdmin(admin.ModelAdmin):
