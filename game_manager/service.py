@@ -241,14 +241,15 @@ def generate_transportation_sheet(journey_type):
 
     row_index = row_index + 1
     for row_num, data in enumerate(rows):
-        # if data[4]:
-            # data[4] = datetime.datetime.strptime(data[4], '%d-%m-%Y')
+        journey_date = ''
+        if data[4]:
+            journey_date = data[4].strftime('%d-%m-%Y')
         worksheet.write(row_index + row_num, 0, row_num + 1)
         worksheet.write(row_index + row_num, 1, data[0])
         worksheet.write(row_index + row_num, 2, data[1])
         worksheet.write(row_index + row_num, 3, data[2])
         worksheet.write(row_index + row_num, 4, data[3])
-        worksheet.write(row_index + row_num, 5, data[4])
+        worksheet.write(row_index + row_num, 5, journey_date)
         worksheet.write(row_index + row_num, 6, data[5])
         worksheet.write(row_index + row_num, 7, data[6])
 
