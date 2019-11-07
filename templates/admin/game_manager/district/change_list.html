@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_static %}
+
+{% block object-tools-items %}
+    <li>
+        <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+            <option value="">Export reports</option>
+            <option value="/game-manager/download/district/male/accommodation-count">Male accommodations</option>
+            <option value="/game-manager/download/district/female/accommodation-count">Female accommodations</option>
+        </select>
+    </li>
+    {{ block.super }}
+
+{% endblock %}

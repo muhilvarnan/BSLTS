@@ -16,6 +16,8 @@ class ZoneAdmin(admin.ModelAdmin):
 
 
 class DistrictAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/game_manager/district/change_list.html'
+
     list_display = ('name', 'zone', 'contact_name', 'contact_phone_number', 'contact_email')
     search_fields = ('name', 'zone__name', 'contact_name', 'contact_phone_number', 'contact_email')
 
