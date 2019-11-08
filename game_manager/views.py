@@ -1,5 +1,6 @@
 from django.http import HttpResponse
-from .service import generate_judge_event_sheet, generate_accommodation_sheet, generate_transportation_sheet
+from .service import generate_judge_event_sheet, generate_accommodation_sheet, generate_transportation_sheet, \
+    generate_participant_registration_sheet, generate_family_registration_sheet
 from django.contrib.auth.decorators import login_required
 
 
@@ -35,4 +36,27 @@ def download_transportation_count(request, journey_type):
     response['Content-Disposition'] = 'attachment; filename=%s' % filename
 
     return response
+
+@login_required(login_url='/')
+def download_participant_registration_info(request, district_id, gender):
+    filename, output = generate_participant_registration_sheet(district_id, gender)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+    return response
+
+@login_required(login_url='/')
+def download_family_registration_info(request, district_id, gender):
+    filename, output = generate_family_registration_sheet(district_id, gender)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+    return response
+
 
