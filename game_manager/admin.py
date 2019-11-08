@@ -18,9 +18,26 @@ class ZoneAdmin(admin.ModelAdmin):
 class DistrictAdmin(admin.ModelAdmin):
     change_list_template = 'admin/game_manager/district/change_list.html'
 
-    list_display = ('name', 'zone', 'contact_name', 'contact_phone_number', 'contact_email')
+    list_display = ('name', 'zone', 'contact_name', 'contact_phone_number', 'contact_email', 'download_registration_male_sheet','download_registration_female_sheet',
+                    'download_registration_boy_sheet','download_registration_girl_sheet')
     search_fields = ('name', 'zone__name', 'contact_name', 'contact_phone_number', 'contact_email')
 
+    def download_registration_male_sheet(self, obj):
+        return format_html('<a href="%s/%s/%s/%s">%s</a>' % ('/game-manager/download/district', obj.id, 'male', 'family-registration-info', "Download"))
+
+    def download_registration_female_sheet(self, obj):
+        return format_html('<a href="%s/%s/%s/%s">%s</a>' % ('/game-manager/download/district', obj.id, 'female', 'family-registration-info', "Download"))
+
+    def download_registration_boy_sheet(self, obj):
+        return format_html('<a href="%s/%s/%s/%s">%s</a>' % ('/game-manager/download/district', obj.id, 'boy', 'participant-registration-info', "Download"))
+
+    def download_registration_girl_sheet(self, obj):
+        return format_html('<a href="%s/%s/%s/%s">%s</a>' % ('/game-manager/download/district', obj.id, 'girl', 'participant-registration-info', "Download"))
+
+    download_registration_male_sheet.short_description = 'Gents Registration Sheet'
+    download_registration_female_sheet.short_description = 'Mahilas Registration Sheet'
+    download_registration_boy_sheet.short_description = 'Boys Registration Sheet'
+    download_registration_girl_sheet.short_description = 'Girls Registration Sheet'
 
 class TeamInline(admin.TabularInline):
     model = Team.participants.through

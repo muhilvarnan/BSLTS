@@ -3,6 +3,7 @@ import xlsxwriter
 from .models import Event, ParticipantFamily, Participant
 from django.db.models import Sum
 from django.db import connection
+from itertools import chain
 import datetime
 
 
@@ -261,7 +262,65 @@ def generate_transportation_sheet(journey_type):
 
 
 def generate_participant_registration_sheet(district_id, gender):
-    pass
+    participants = Participant.objects.filter(gender=gender.title(),
+                                              samithi__district__id=district_id)
+    district = participants[0].samithi.district.name
+
+    output = io.BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    worksheet.set_paper(9)
+
+    header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
+
+    headers = ['S.No', 'Name', 'DOB', 'Group', 'Event 1', 'Event 2']
+
+    worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
+                          "Aum Sri Sai Ram",
+                          header_format)
+
+    worksheet.set_column('A:A', 85)
+
+    worksheet.merge_range('A2:%s2' % (get_end_column_alphabet(len(headers))),
+                          "Balvikas State Level Talent Search 2019 - %s - %s Registration List " % (
+                          district, gender),
+                          header_format)
+
+    row_index = 2
+    field_header_formatter = workbook.add_format({'bold': True, 'align': 'center', 'bg_color': 'grey'})
+
+    for col_num, header in enumerate(headers):
+        worksheet.write(row_index, col_num, header, field_header_formatter)
+
+    worksheet.set_column('A4:%s4' % (get_end_column_alphabet(len(headers))), 20)
+
+
+    row_index = row_index + 1
+    for row_num, participant in enumerate(participants):
+        teams = participant.team_set.all()
+
+        team_events = []
+        for team in teams:
+            team_events += team.eventparticipant_set.all()
+
+        events = participant.eventparticipant_set.all()
+        participant_events = list(chain(team_events, events))
+        worksheet.write(row_index + row_num, 0, row_num + 1)
+        worksheet.write(row_index + row_num, 1, participant.name)
+        worksheet.write(row_index + row_num, 2, participant.group.name)
+        worksheet.write(row_index + row_num, 3, participant.date_of_birth.strftime('%d-%m-%Y'))
+        idx = 4
+        for event_participant in participant_events:
+            worksheet.write(row_index + row_num, idx, event_participant.event.name)
+            idx += 1
+
+    workbook.close()
+
+    output.seek(0)
+
+    return 'Registration_%s_%s_BSLTS_2019.xlsx' % (district, gender), output
+
 
 def generate_family_registration_sheet(district_id, gender):
     header_gender = 'Gents' if gender == 'male' else 'Mahilas'
