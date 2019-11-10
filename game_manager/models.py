@@ -94,6 +94,7 @@ class ParticipantFamily(models.Model):
     gender = models.CharField(max_length=10, choices=GENDERS, default=None)
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
     relation = models.CharField(max_length=100, choices=RELATIONS, default=None)
+    phone_number = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name
