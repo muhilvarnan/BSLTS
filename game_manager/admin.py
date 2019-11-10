@@ -168,7 +168,7 @@ class ParticipantFamilyAdmin(admin.ModelAdmin):
 class ParticipantFamilyInline(admin.TabularInline):
     extra = 0
     model = ParticipantFamily
-    fields = ('name', 'gender', 'relation')
+    fields = ('name', 'gender', 'relation', 'phone_number')
 
 
 
