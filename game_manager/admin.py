@@ -166,6 +166,7 @@ class ParticipantFamilyAdmin(admin.ModelAdmin):
     list_display = ('name', 'gender', 'participant', 'relation')
 
 class ParticipantFamilyInline(admin.TabularInline):
+    extra = 0
     model = ParticipantFamily
     fields = ('name', 'gender', 'relation')
 
