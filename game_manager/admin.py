@@ -40,6 +40,7 @@ class DistrictAdmin(admin.ModelAdmin):
     download_registration_girl_sheet.short_description = 'Girls Registration Sheet'
 
 class TeamInline(admin.TabularInline):
+    extra = 0
     model = Team.participants.through
 
 
@@ -158,6 +159,7 @@ class EventParticipantAdmin(admin.ModelAdmin):
 
 
 class EventParticipantInline(admin.TabularInline):
+    extra = 1
     model = EventParticipant
     fields = ('event',)
     form = EventParticipantAdminForm
@@ -190,10 +192,11 @@ class ParticipantAdmin(ImportExportModelAdmin):
     samithi_district_name.short_description = 'District'
 
     inlines = [
-        ParticipantFamilyInline,
+        EventParticipantInline,
         TeamInline,
-        EventParticipantInline
+        ParticipantFamilyInline,
     ]
+
 
 
 class TeamAdminForm(forms.ModelForm):

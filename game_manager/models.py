@@ -55,6 +55,7 @@ class Participant(models.Model):
         ('Girl', 'Girl')
     )
     TRANSPORT_MODE = (
+        ('Direct to Mandapam', 'Direct to Mandapam'),
         ('Railway Station','Railway Station'),
         ('Old Bus Stand','Old Bus Stand'),
         ('New Bus Stand','New Bus Stand')
