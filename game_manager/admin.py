@@ -166,6 +166,8 @@ class EventParticipantInline(admin.TabularInline):
 
 class ParticipantFamilyAdmin(admin.ModelAdmin):
     list_display = ('name', 'gender', 'participant', 'relation')
+    search_fields = ('name', 'gender', 'participant__name', 'relation')
+    list_filter = (('participant__samithi__district__name', custom_titled_filter('District')), 'gender')
 
 class ParticipantFamilyInline(admin.TabularInline):
     extra = 0
