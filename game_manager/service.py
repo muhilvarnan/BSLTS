@@ -103,7 +103,7 @@ def generate_judge_event_sheet(event_id):
     return '%s-%s.xlsx' % (group_name, event.name), output
 
 def generate_participant_sheet():
-    participants = Participant.objects.all().values('id','code', 'name', 'group__name', 'samithi__district__name')
+    participants = Participant.objects.all()
 
     output = io.BytesIO()
 
@@ -113,7 +113,7 @@ def generate_participant_sheet():
 
     header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
 
-    headers = ['Code', 'Name', 'Group', 'District']
+    headers = ['S.No', 'Code', 'Name', 'Group', 'District', 'Event 1', 'Event 2']
 
     worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
                           "Sri Sathya Sai Organisations, Tirupur District, TamilNadu",
@@ -140,11 +140,24 @@ def generate_participant_sheet():
 
     row_index = row_index + 1
     for row_num, participant in enumerate(participants):
-        print(participant)
-        worksheet.write(row_index + row_num, 0, participant.get("code"))
-        worksheet.write(row_index + row_num, 1, participant.get("name"))
-        worksheet.write(row_index + row_num, 2, participant.get("group__name"))
-        worksheet.write(row_index + row_num, 3, participant.get("samithi__district__name"))
+        teams = participant.team_set.all()
+
+        team_events = []
+        for team in teams:
+            team_events += team.eventparticipant_set.all()
+
+        events = participant.eventparticipant_set.all()
+        participant_events = list(chain(team_events, events))
+        worksheet.write(row_index + row_num, 0, row_num + 1)
+        worksheet.write(row_index + row_num, 1, participant.code)
+        worksheet.write(row_index + row_num, 2, participant.name)
+        worksheet.write(row_index + row_num, 3, participant.group.name)
+        worksheet.write(row_index + row_num, 4, participant.samithi.district.name)
+        idx = 5
+        for event_participant in participant_events:
+            worksheet.write(row_index + row_num, idx, event_participant.event.name)
+            idx += 1
+
 
     workbook.close()
 
