@@ -199,7 +199,6 @@ def generate_transportation_sheet(journey_type):
                               ON game_manager_samithi.district_id = game_manager_district.id 
                        LEFT JOIN game_manager_participant 
                               ON game_manager_participant.samithi_id = game_manager_samithi.id 
-                                 AND game_manager_participant.accommodation = true 
                                  AND %(type)s_point != 'Direct to Mandapam' 
                        LEFT JOIN game_manager_participantfamily 
                               ON game_manager_participantfamily.participant_id = 
