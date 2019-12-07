@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from .service import generate_judge_event_sheet, generate_accommodation_sheet, generate_transportation_sheet, \
-    generate_participant_registration_sheet, generate_family_registration_sheet
+    generate_participant_registration_sheet, generate_family_registration_sheet, generate_participant_sheet
 from django.contrib.auth.decorators import login_required
 
 
@@ -59,4 +59,14 @@ def download_family_registration_info(request, district_id, gender):
 
     return response
 
+@login_required(login_url='/')
+def download_participant_list(request):
+    filename, output = generate_participant_sheet()
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+    return response
 

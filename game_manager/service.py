@@ -102,6 +102,56 @@ def generate_judge_event_sheet(event_id):
 
     return '%s-%s.xlsx' % (group_name, event.name), output
 
+def generate_participant_sheet():
+    participants = Participant.objects.all().values('id','code', 'name', 'group__name', 'samithi__district__name')
+
+    output = io.BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    worksheet.set_paper(9)
+
+    header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
+
+    headers = ['Code', 'Name', 'Group', 'District']
+
+    worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
+                          "Sri Sathya Sai Organisations, Tirupur District, TamilNadu",
+                          header_format)
+
+    worksheet.set_column('A:A', 85)
+
+    worksheet.merge_range('A2:%s2' % (get_end_column_alphabet(len(headers))),
+                          "TAMILNADU BALVIKAS STATE LEVEL TALENT SEARCH 2019",
+                          header_format)
+
+    event_info_format = workbook.add_format({'bold': True, 'font_color': 'red', 'align': 'center'})
+
+    row_index = 3
+
+    field_header_formatter = workbook.add_format({'bold': True, 'align': 'center'})
+
+    for col_num, header in enumerate(headers):
+        worksheet.write(row_index, col_num, header, field_header_formatter)
+
+    worksheet.set_column('A4:B4', 15)
+
+    worksheet.set_column('C4:%s2' % (get_end_column_alphabet(len(headers))), 20)
+
+    row_index = row_index + 1
+    for row_num, participant in enumerate(participants):
+        print(participant)
+        worksheet.write(row_index + row_num, 0, participant.get("code"))
+        worksheet.write(row_index + row_num, 1, participant.get("name"))
+        worksheet.write(row_index + row_num, 2, participant.get("group__name"))
+        worksheet.write(row_index + row_num, 3, participant.get("samithi__district__name"))
+
+    workbook.close()
+
+    output.seek(0)
+
+    return 'Participants_BSLTS_2019.xlsx', output
+
 
 def generate_accommodation_sheet(gender):
     participant_gender = 'Boy' if gender == 'male' else 'Girl'
