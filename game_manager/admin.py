@@ -159,7 +159,7 @@ class EventParticipantAdmin(admin.ModelAdmin):
 
 
 class EventParticipantInline(admin.TabularInline):
-    extra = 1
+    extra = 0
     model = EventParticipant
     fields = ('event',)
     form = EventParticipantAdminForm
