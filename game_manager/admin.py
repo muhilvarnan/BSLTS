@@ -91,7 +91,7 @@ class EventParticipantAdminForm(forms.ModelForm):
         fields = ('event', 'team', 'participant')
 
     def check_mismatch_event_participant_count(self, participant):
-        return participant.eventparticipant_set.count() >= MAX_EVENT_PER_PARTICIPANT
+        return participant.eventparticipant_set.count() > MAX_EVENT_PER_PARTICIPANT
 
     def clean_participant(self):
         if self.cleaned_data['participant'] and self.check_mismatch_group(self.cleaned_data['participant']):
@@ -110,7 +110,7 @@ class EventParticipantAdminForm(forms.ModelForm):
         return self.cleaned_data['participant']
 
     def check_mismatch_group(self, participant):
-        return participant.group.id not in list(map(lambda group: group.id, self.cleaned_data['event'].groups.all()))
+        return str(participant.group.id) not in list(map(lambda group: str(group.id), self.cleaned_data['event'].groups.all()))
 
     def get_group_mismatch_validation_error(self, participant):
         return forms.ValidationError("Participant with code %s is in Group(%s) which does not match with event group%s)"
