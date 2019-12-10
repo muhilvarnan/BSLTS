@@ -151,8 +151,9 @@ def generate_participant_sheet():
         worksheet.write(row_index + row_num, 0, row_num + 1)
         worksheet.write(row_index + row_num, 1, participant.code)
         worksheet.write(row_index + row_num, 2, participant.name)
-        worksheet.write(row_index + row_num, 3, participant.group.name)
-        worksheet.write(row_index + row_num, 4, participant.samithi.district.name)
+        worksheet.write(row_index + row_num, 3, participant.date_of_birth.strftime('%d-%m-%Y'))
+        worksheet.write(row_index + row_num, 4, participant.group.name)
+        worksheet.write(row_index + row_num, 5, participant.samithi.district.name)
         idx = 5
         for event_participant in participant_events:
             worksheet.write(row_index + row_num, idx, event_participant.event.name)
