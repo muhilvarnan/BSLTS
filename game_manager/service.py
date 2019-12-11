@@ -103,7 +103,7 @@ def generate_judge_event_sheet(event_id):
     return '%s-%s.xlsx' % (group_name, event.name), output
 
 def generate_participant_sheet():
-    participants = Participant.objects.all()
+    participants = Participant.objects.all().order_by('samithi__district__name')
 
     output = io.BytesIO()
 
