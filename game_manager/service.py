@@ -113,7 +113,7 @@ def generate_participant_sheet():
 
     header_format = workbook.add_format({'align': 'center', 'bg_color': "orange", 'bold': True, 'border': 1})
 
-    headers = ['S.No', 'Code', 'Name', 'DOB',  'Group', 'District', 'Event 1', 'Event 2']
+    headers = ['S.No', 'Code', 'Name', 'DOB', 'Gender',  'Group', 'District',  'Samithi', 'Event 1', 'Event 2']
 
     worksheet.merge_range('A1:%s1' % (get_end_column_alphabet(len(headers))),
                           "Sri Sathya Sai Organisations, Tirupur District, TamilNadu",
@@ -152,9 +152,11 @@ def generate_participant_sheet():
         worksheet.write(row_index + row_num, 1, participant.code)
         worksheet.write(row_index + row_num, 2, participant.name)
         worksheet.write(row_index + row_num, 3, participant.date_of_birth.strftime('%d-%m-%Y'))
-        worksheet.write(row_index + row_num, 4, participant.group.name)
-        worksheet.write(row_index + row_num, 5, participant.samithi.district.name)
-        idx = 6
+        worksheet.write(row_index + row_num, 4, participant.gender)
+        worksheet.write(row_index + row_num, 5, participant.group.name)
+        worksheet.write(row_index + row_num, 6, participant.samithi.district.name)
+        worksheet.write(row_index + row_num, 7, participant.samithi.name)
+        idx = 8
         for event_participant in participant_events:
             worksheet.write(row_index + row_num, idx, event_participant.event.name)
             idx += 1
